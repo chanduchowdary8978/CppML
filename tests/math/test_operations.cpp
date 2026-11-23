@@ -239,5 +239,3 @@ TEST(MetricsTest, RSquaredConstantTarget) {
         std::domain_error
     );
 }
-
-

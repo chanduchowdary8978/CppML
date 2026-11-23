@@ -1,4 +1,4 @@
-﻿#include <cmath>
+#include <cmath>
 
 #include "cppml/math/metrics.hpp"
 
@@ -147,4 +147,3 @@ TEST(MetricsTest, RejectsNonFinitePredictions) {
         std::invalid_argument
     );
 }
-

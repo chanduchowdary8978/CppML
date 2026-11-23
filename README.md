@@ -579,6 +579,3 @@ Git by default.
 
 
 CppML is distributed under the MIT License. See \[LICENSE](LICENSE).
-
-
-

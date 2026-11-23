@@ -1,4 +1,4 @@
-﻿
+
 # LR-10: Benchmarking and Performance Evaluation
 
 ## Objective
@@ -458,5 +458,3 @@ The benchmark results demonstrate that:
 These results provide an initial performance baseline for CppML.
 Further work should focus on broader numerical stress testing,
 additional hardware, and more representative real-world workloads.
-
-
