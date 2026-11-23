@@ -1,581 +1,205 @@
+# CppML
 
+**A C++20 Machine Learning and Numerical Computing Library with CPU and CUDA backends.**
 
-\# CppML
+CppML is a lightweight machine learning library focused on implementing numerical algorithms, optimization, and high-performance computing using modern C++.
 
+## Features
 
+| Component | Implementation |
+|---|---|
+| Matrix & Vector | Contiguous float32 data structures |
+| Mathematical Operations | MatVec, transpose MatVec, dot product, sum, mean |
+| Linear Regression | Batch Gradient Descent |
+| Least Squares | Householder QR decomposition |
+| SVD | One-sided Jacobi pseudoinverse |
+| Evaluation Metrics | MSE, RMSE, MAE, R² |
+| Execution Backends | CPU, CUDA, AUTO |
+| Python Bindings | pybind11 |
 
-A C++20 machine learning library focused on understanding and implementing
-
-core ML algorithms, numerical methods, CPU execution, and CUDA acceleration.
-
-
-
-CppML currently focuses on Linear Regression and Least Squares, with CPU
-
-and CUDA implementations for supported operations.
-
-
-
-\## Features
-
-
-
-\### Core data structures
-
-\- Row-major `Matrix` and `Vector` containers.
-
-\- Checked element access and dimension validation.
-
-\- Contiguous `float32` storage.
-
-
-
-\### Mathematical operations
-
-\- Matrix-vector multiplication.
-
-\- Transpose matrix-vector multiplication.
-
-\- Vector subtraction.
-
-\- Dot product.
-
-\- Sum and mean.
-
-\- Scalar addition.
-
-\- Double-precision intermediate accumulation and numerical range checks.
-
-
-
-\### Linear Regression
-
-\- Batch Gradient Descent.
-
-\- CPU and CUDA implementations.
-
-\- CPU, CUDA, and AUTO execution backend selection.
-
-\- Prediction and model parameter access.
-
-\- Input validation and numerical overflow checks.
-
-
-
-\### Least Squares
-
-\- Householder QR decomposition with column equilibration.
-
-\- One-sided Jacobi SVD.
-
-\- Pseudoinverse solution for rank-deficient and underdetermined systems.
-
-\- Numerical validation against known synthetic datasets.
-
-
-
-\### CUDA
-
-\- CUDA implementations of the seven mathematical operations.
-
-\- CUDA Gradient Descent training.
-
-\- GPU-resident training data and intermediate values during training.
-
-\- Tiled partial-gradient computation, shared-memory reduction, and fused
-
-&#x20; parameter updates.
-
-\- Automatic CPU/CUDA dispatch for Linear Regression.
-
-
-
-\### Evaluation and benchmarks
-
-\- MSE, MAE, RMSE, and R² metrics.
-
-\- Google Benchmark-based C++ benchmarks.
-
-\- scikit-learn baseline scripts.
-
-\- CPU/CUDA/AUTO dispatch analysis.
-
-\- Numerical accuracy measurements against ground truth.
-
-
-
-\## Project structure
-
-
+## Architecture
 
 ```text
-
-CppML/
-
-├── benchmarks/
-
-│   ├── benchmark\_data.hpp
-
-│   ├── benchmark\_math.cpp
-
-│   ├── benchmark\_models.cpp
-
-│   └── benchmark\_solvers.cpp
-
-├── docs/
-
-│   └── LR10\_BENCHMARKING.md
-
-├── examples/
-
-│   └── cuda/
-
-│       ├── CMakeLists.txt
-
-│       └── vector\_add.cu
-
-├── include/
-
-│   └── cppml/
-
-│       ├── core/
-
-│       ├── math/
-
-│       └── models/
-
-├── python/
-
-│   ├── analyze\_benchmarks.py
-
-│   └── benchmark\_sklearn.py
-
-├── scripts/
-
-│   ├── build-cuda.ps1
-
-│   └── enable-cuda.ps1
-
-├── src/
-
-│   ├── core/
-
-│   ├── math/
-
-│   └── models/
-
-├── tests/
-
-│   ├── core/
-
-│   ├── math/
-
-│   └── models/
-
-├── CMakeLists.txt
-
-├── CMakePresets.json
-
-├── vcpkg.json
-
-├── .gitignore
-
-└── LICENSE
-
+                 CppML
+                   |
+          Public C++20 API
+                   |
+        Numerical Operations
+                   |
+        +----------+----------+
+        |          |          |
+       CPU        CUDA       Models
+        |          |          |
+        +----------+----------+
+                   |
+             Python API
+                pybind11
 ```
 
+## Performance Benchmarks
 
+### 1. CPU vs CUDA vs AUTO
 
-\## Requirements
+Linear Regression training benchmark using Batch Gradient Descent.
 
+| Samples | Features | Epochs | CPU (ms) | CUDA (ms) | AUTO (ms) | CUDA Speedup |
+|---:|---:|---:|---:|---:|---:|---:|
+| 256 | 8 | 20 | 0.120 | 1.034 | 0.135 | 0.12× |
+| 1,024 | 16 | 20 | 1.056 | 1.193 | 1.051 | 0.89× |
+| 2,048 | 16 | 50 | 5.188 | 2.831 | 2.889 | 1.83× |
+| 4,096 | 32 | 20 | 7.054 | 2.328 | 2.394 | 3.03× |
+| 8,192 | 32 | 20 | 14.284 | 4.394 | 3.834 | 3.25× |
 
+**Speedup = CPU execution time / CUDA execution time**
 
-The project has been validated on Windows with:
+- CUDA is slower for small workloads because GPU launch and transfer overhead can dominate.
+- CUDA becomes beneficial as workload size increases.
+- AUTO selects CPU for smaller workloads and CUDA for larger workloads.
+- The backend selection threshold is workload-dependent.
 
+### 2. Matrix-Vector Multiplication
 
+| Matrix Dimensions | CPU (ms) | CUDA (ms) | CUDA Speedup |
+|---|---:|---:|---:|
+| 16,384 × 64 | 2.095 | 0.919 | 2.28× |
 
-\- C++20 compiler.
+### 3. CppML vs Scikit-learn
 
-\- CMake 3.25 or newer.
+Compared CppML's Householder QR least-squares solver against `sklearn.linear_model.LinearRegression`.
 
-\- Ninja.
+| Samples | Features | CppML (ms) | Scikit-learn (ms) | Speedup |
+|---:|---:|---:|---:|---:|
+| 256 | 8 | 0.0204 | 0.2787 | **13.63×** |
+| 1,024 | 16 | 0.3040 | 0.4256 | **1.40×** |
+| 2,048 | 16 | 0.5897 | 0.5702 | 0.97× |
+| 4,096 | 32 | 3.9377 | 1.2787 | 0.32× |
+| 8,192 | 32 | 10.0497 | 3.4047 | 0.34× |
 
-\- vcpkg.
+**Accuracy comparison**
 
-\- GoogleTest.
+| Samples | CppML R² | Scikit-learn R² |
+|---:|---:|---:|
+| 256 | 0.99999346 | 0.99999344 |
+| 1,024 | 0.99999408 | 0.99999410 |
+| 2,048 | 0.99999117 | 0.99999118 |
+| 4,096 | 0.99999640 | 0.99999642 |
+| 8,192 | 0.99999519 | 0.99999517 |
 
-\- Google Benchmark.
+Maximum coefficient difference: approximately `0.000002`.
 
+**Interpretation:** CppML performs well on the smaller workloads tested, while Scikit-learn performs better on larger workloads. Both achieve nearly identical numerical accuracy.
 
+### Benchmark Methodology
 
-For CUDA builds, additionally install:
+**CPU vs CUDA**
+- Google Benchmark executables.
+- CPU, CUDA and AUTO benchmark cases measured using the same CUDA-enabled executable.
+- Speedup = CPU time / CUDA time.
+- Results are execution times in milliseconds.
 
+**CppML vs Scikit-learn**
+- 2 warm-up runs and 10 measured runs.
+- Median execution time reported.
+- Single-threaded numerical libraries using `threadpoolctl`.
+- Identical generated datasets and regression targets.
+- Dataset generation and CppML Matrix/Vector conversion excluded from training time.
+- CppML timing measures `solve_qr()` execution.
+- Scikit-learn timing measures estimator creation and `fit()` execution.
 
+These are initial benchmark results from one machine. They are not universal performance guarantees.
 
-\- NVIDIA GPU and a compatible NVIDIA driver.
+## Benchmark Hardware
 
-\- CUDA Toolkit with `nvcc`.
-
-\- Visual Studio C++ build tools compatible with the installed CUDA Toolkit.
-
-
-
-The tested configuration is documented in
-
-\[`docs/LR10\_BENCHMARKING.md`](docs/LR10\_BENCHMARKING.md).
-
-
-
-\## Dependencies
-
-
-
-Dependencies are managed through the vcpkg manifest:
-
-
-
-\- GoogleTest — unit testing.
-
-\- Google Benchmark — performance benchmarking.
-
-
-
-The core implementation does not depend on Eigen, fmt, PyTorch, or
-
-scikit-learn.
-
-
-
-Python benchmark scripts use NumPy and scikit-learn as external baselines.
-
-They are not dependencies of the C++ library.
-
-
-
-\## Build on Windows
-
-
-
-Set `VCPKG\_ROOT` to your vcpkg installation directory before using the
-
-CMake presets.
-
-
-
-For example, in PowerShell:
-
-
-
-```powershell
-
-$env:VCPKG\_ROOT = "D:\\DevTools\\vcpkg"
-
-```
-
-
-
-\### CPU Release
-
-
-
-Configure:
-
-
-
-```powershell
-
-cmake --preset windows-cpu-release
-
-```
-
-
-
-Build:
-
-
-
-```powershell
-
-cmake --build --preset cpu-release
-
-```
-
-
-
-Run tests:
-
-
-
-```powershell
-
-ctest --preset cpu-release
-
-```
-
-
-
-\### CPU Debug
-
-
-
-Configure:
-
-
-
-```powershell
-
-cmake --preset windows-cpu-debug
-
-```
-
-
-
-Build:
-
-
-
-```powershell
-
-cmake --build --preset cpu-debug
-
-```
-
-
-
-Run tests:
-
-
-
-```powershell
-
-ctest --preset cpu-debug
-
-```
-
-
-
-\### CUDA Release
-
-
-
-The CUDA preset uses architecture `86`, suitable for the NVIDIA RTX 3050
-
-used during project validation.
-
-
-
-Configure:
-
-
-
-```powershell
-
-cmake --preset windows-cuda-release
-
-```
-
-
-
-Build:
-
-
-
-```powershell
-
-cmake --build --preset cuda-release
-
-```
-
-
-
-Run tests:
-
-
-
-```powershell
-
-ctest --preset cuda-release
-
-```
-
-
-
-CUDA builds require the CUDA Toolkit and a compatible host compiler.
-
-On Windows, initialize the Visual Studio developer environment before
-
-running CMake if the compiler or Windows SDK is not already available
-
-in the shell environment.
-
-
-
-\## Execution backends
-
-
-
-Linear Regression supports three backend selections:
-
-
-
-| Backend | Behavior |
-
+| Component | Specification |
 |---|---|
+| CPU | Intel Core i5-13450HX |
+| CPU Threads | 16 logical processors |
+| GPU | NVIDIA GeForce RTX 3050 Laptop GPU |
+| GPU Memory | 6 GB |
+| CUDA | 13.3 |
+| Compiler | MSVC |
+| Language | C++20 |
 
-| `CPU` | Executes training and prediction on the CPU. |
+## Python Quick Start
 
-| `CUDA` | Executes training and prediction on the CUDA backend. |
+```python
+import cppml
 
-| `AUTO` | Selects CPU or CUDA using the current workload threshold. |
+X = cppml.Matrix([
+    [1.0],
+    [2.0],
+    [3.0],
+    [4.0],
+    [5.0]
+])
 
+y = cppml.Vector([3.0, 5.0, 7.0, 9.0, 11.0])
 
+model = cppml.LinearRegression(
+    cppml.ExecutionBackend.CPU
+)
 
-The current AUTO dispatch threshold is provisional and set to
+model.fit(X, y, 0.01, 2000)
 
-1,000,000 estimated operations.
+predictions = model.predict(X)
 
-
-
-This threshold is based on measurements from one CPU/GPU configuration.
-
-It is not a universal CPU/GPU crossover point.
-
-
-
-\## Basic API example
-
-
-
-```cpp
-
-\#include <cppml/core/matrix.hpp>
-
-\#include <cppml/core/vector.hpp>
-
-\#include <cppml/models/execution\_backend.hpp>
-
-\#include <cppml/models/linear\_regression.hpp>
-
-
-
-int main() {
-
-&#x20;   cppml::Matrix X(4, 1);
-
-&#x20;   X(0, 0) = 1.0f;
-
-&#x20;   X(1, 0) = 2.0f;
-
-&#x20;   X(2, 0) = 3.0f;
-
-&#x20;   X(3, 0) = 4.0f;
-
-
-
-&#x20;   cppml::Vector y{3.0f, 5.0f, 7.0f, 9.0f};
-
-
-
-&#x20;   cppml::models::LinearRegression model(
-
-&#x20;       cppml::models::ExecutionBackend::CPU
-
-&#x20;   );
-
-
-
-&#x20;   model.fit(X, y, 0.01f, 1000);
-
-
-
-&#x20;   const cppml::Vector predictions = model.predict(X);
-
-
-
-&#x20;   return predictions.size() == y.size() ? 0 : 1;
-
-}
-
+print(predictions)
 ```
 
+### Least Squares
 
+```python
+result = cppml.LeastSquares.solve_qr(X, y)
 
-\## Validation status
+print(result.coefficients)
+print(result.intercept)
+```
 
+### Evaluation Metrics
 
+```python
+print(cppml.Metrics.mse(y, predictions))
+print(cppml.Metrics.rmse(y, predictions))
+print(cppml.Metrics.mae(y, predictions))
+print(cppml.Metrics.r2(y, predictions))
+```
 
-Latest clean Release validation:
+## Project Structure
 
+```text
+CppML/
+├── include/
+│   └── cppml/
+├── src/
+│   ├── math/
+│   ├── models/
+│   ├── solvers/
+│   └── cuda/
+├── python/
+│   ├── cppml/
+│   └── bindings.cpp
+├── benchmarks/
+├── tests/
+├── CMakeLists.txt
+└── pyproject.toml
+```
 
+## Current Limitations
 
-| Configuration | Tests passed | Tests failed |
+- QR performance on larger matrices needs optimization.
+- CUDA acceleration is workload-dependent.
+- Python NumPy/Pandas interoperability is not yet implemented.
+- Numerical algorithms and solver coverage are still expanding.
 
-|---|---:|---:|
+## Roadmap
 
-| CPU-only | 141 | 0 |
+- Optimize QR and matrix operations.
+- Improve CPU cache utilization and memory access.
+- Expand CUDA-accelerated algorithms.
+- Add NumPy interoperability.
+- Expand machine learning algorithms.
+- Improve benchmark coverage and numerical validation.
 
-| CUDA-enabled | 191 | 0 |
+## License
 
-
-
-A standalone CUDA vector-add example was also built and executed
-
-successfully on an NVIDIA GeForce RTX 3050 Laptop GPU.
-
-
-
-These are functional test results. Compute Sanitizer validation is
-
-still incomplete because the instrumented application terminated
-
-before its first instrumented API call.
-
-
-
-\## Benchmark results
-
-
-
-Benchmark methodology, hardware details, numerical accuracy results,
-
-CUDA optimization measurements, and limitations are documented in:
-
-
-
-\[`docs/LR10\_BENCHMARKING.md`](docs/LR10\_BENCHMARKING.md)
-
-
-
-Benchmark outputs are generated under `results/` and are excluded from
-
-Git by default.
-
-
-
-\## Current scope and limitations
-
-
-
-\- The initial focus is Linear Regression, not a general-purpose tensor
-
-&#x20; framework.
-
-\- Matrix and Vector storage currently use `float32`.
-
-\- QR and SVD solvers execute on the CPU, including in CUDA-enabled builds.
-
-\- AUTO dispatch is a provisional heuristic, not a runtime autotuner.
-
-\- Benchmark results are specific to the tested hardware and workloads.
-
-\- Numerical accuracy on synthetic well-conditioned datasets does not
-
-&#x20; guarantee stability on arbitrary real-world data.
-
-
-
-\## License
-
-
-
-CppML is distributed under the MIT License. See \[LICENSE](LICENSE).
+MIT License
