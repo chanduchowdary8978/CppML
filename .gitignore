@@ -1,0 +1,48 @@
+
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# vcpkg
+vcpkg_installed/
+
+# IDE
+.vs/
+.idea/
+.vscode/
+
+# Compiled files
+*.obj
+*.o
+*.exe
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.exp
+
+# CMake generated files
+CMakeUserPresets.json
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+build.ninja
+.ninja_deps
+.ninja_log
+
+# Benchmark outputs
+results/*.json
+results/*.csv
+results/profiling/
+
+# Diagnostic logs
+sanitizer-*.log
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/

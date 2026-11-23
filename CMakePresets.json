@@ -1,0 +1,85 @@
+
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "windows-cpu-release",
+      "displayName": "Windows CPU Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/presets/cpu-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "CPPML_ENABLE_CUDA": "OFF",
+        "CPPML_BUILD_BENCHMARKS": "ON"
+      }
+    },
+    {
+      "name": "windows-cpu-debug",
+      "displayName": "Windows CPU Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/presets/cpu-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "CPPML_ENABLE_CUDA": "OFF",
+        "CPPML_BUILD_BENCHMARKS": "ON"
+      }
+    },
+    {
+      "name": "windows-cuda-release",
+      "displayName": "Windows CUDA Release (Compute Capability 8.6)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/presets/cuda-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "CPPML_ENABLE_CUDA": "ON",
+        "CPPML_BUILD_BENCHMARKS": "ON",
+        "CMAKE_CUDA_ARCHITECTURES": "86"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "cpu-release",
+      "configurePreset": "windows-cpu-release"
+    },
+    {
+      "name": "cpu-debug",
+      "configurePreset": "windows-cpu-debug"
+    },
+    {
+      "name": "cuda-release",
+      "configurePreset": "windows-cuda-release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "cpu-release",
+      "configurePreset": "windows-cpu-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "cpu-debug",
+      "configurePreset": "windows-cpu-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "cuda-release",
+      "configurePreset": "windows-cuda-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}
